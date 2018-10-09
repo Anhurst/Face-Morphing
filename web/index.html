@@ -1,0 +1,448 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>  
+    div.padded {  
+      padding-top: 0px;  
+      padding-right: 20px;  
+      padding-bottom: 0.25in;  
+      padding-left: 20px;  
+    }
+    div.space {  
+      padding-top: 20px;  
+      padding-right: 0px;  
+      padding-bottom: 0.25in;  
+      padding-left: 0px;  
+    }
+    div.head {  
+      background-color: #F8F9F9; 
+      padding-top: 10px;  
+      padding-right: 50px;  
+      padding-bottom: 10px;  
+      padding-left: 50px; 
+    }  
+    div.parts {  
+      background-color: #F8F9F9; 
+      padding-top: 25px;  
+      padding-right: 50px;  
+      padding-bottom: 0.25in;  
+      padding-left: 50px; 
+    } 
+    div.break {
+        height: 1px;
+        background-color: #D6DBDF
+    }
+    h1 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 30px;
+    font-style: bold;
+    font-variant: normal;
+    font-weight: 600;
+    line-height: 26.4px;
+    color: #434343;
+    } 
+    h3 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: 500;
+    color: #696969;
+    line-height: 26.4px;
+    } 
+    h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 24px;
+    font-style: bold;
+    font-variant: bold;
+    font-weight: 520;
+    line-height: 26.4px;
+    color: #434343;
+    height: 10px;
+    } 
+    p {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: 400;
+    line-height: 20px;
+    color: #696969;
+    }
+    figcaption {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: 400;
+    line-height: 20px;
+    color: #434343;
+    }
+    body {
+        background-color: #F2F3F4;
+    }
+
+  </style> 
+<title>Annalise Hurst  |  CS 194-26</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+</head>
+<body>
+<br />
+    <div class="padded">
+        <div class="head">
+            <h1 align="left">Programming Project #5: Face Morphing</h1>
+            <h3 align="left">by Annalise Hurst: CS 194-26 Fall 2016</h3>
+        </div>
+    <div class="space"></div>
+    <div class="parts">
+        <h2 align="left">Overview</h2>
+            <div class="break"></div>
+            <p>Using image warping techniques one can produce an animation of one image changing smoothly into another. One technique used to produce a blend of two images is cross-dissolve, however using only this technique doesn't produce good morphs if the objects aren't aligned. Warping each image into an average shape and then cross-dissolving solves this problem. In this project I produced a "morph" animation of my face into another face. Since large databases are now able to be compiled, data-driven methods for computational photography are taking advantage. The easiest way to learn things about a large database is to compute its average. You can then extrapolate features and add them to other images to produce caricatures, or change their attributes. In this project I computed the mean of a population of faces, produced a caricature of myself, and changed the gender of my face.</p>
+            <div class="space"></div>
+
+        <h2 align="left">Defining Correspondences</h2>
+            <div class="break"></div>
+            <p>Before being able to warp two faces into an average shape, pairs of corresponding points must be defined. For each of the two faces I defined 33 points at key feature locations(outline of head and face, eyes, nose, mouth, ect).</p> 
+
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/face1.jpg" width="300px" />
+                        <figcaption align="middle">My Face</figcaption>
+                        <td align="right">
+                        <img src="img/face1points.jpg" width="300px" />
+                        <figcaption align="middle">My Face With Points</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/face2.jpg" width="300px" />
+                        <figcaption align="middle">Her Face</figcaption>
+                        <td align="right">
+                        <img src="img/face2points.jpg" width="300px" />
+                        <figcaption align="middle">Her Face With Points</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <p>After defining each of the images points, I calculated the average points between the two sets.</p> 
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/face1a.jpg" width="300px" />
+                        <figcaption align="middle">My Face With Average Points</figcaption>
+                        <td align="right">
+                        <img src="img/face2a.jpg" width="300px" />
+                        <figcaption align="middle">Her Face With Average Points</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <p>In order to perform simple affine transformations at least three points in each basis must be defined. Therefore each of the point sets needed a triangulation. To compute the triangulation I used a Delaunay triangulation function. Delaunay triangulations maximize the minimum angle of all the angles of the triangles in the triangulation. This keeps the triangles from becoming too skinny, which may produce unwanted artifacts in the warp.</p> 
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/face1d.jpg" width="300px" />
+                        <figcaption align="middle">My Face With Delaunay triangulation</figcaption>
+                        <td align="right">
+                        <img src="img/face2d.jpg" width="300px" />
+                        <figcaption align="middle">Her Face With Delaunay triangulation</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <div class="space"></div>
+            
+
+        <h2 align="left">Computing the "Mid-way Face"</h2>
+            <div class="break"></div>
+            <p>To compute the "Mid-way Face" of the morph, each face must be warped into the average shape. This is done by computing the affine transformation matrix of each triangle in the image's triangulation. For each pixel location in the final image, the corresponding inverse matrix must be applied to get the positions in the original image from which to select the pixel values. This is known as inverse warping, because we start with pixel locations in the final image. If we were to use forward warping some pixels in the final image might not get filled in.</p>
+
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/face1da.jpg" width="300px" />
+                        <figcaption align="middle">My Face With Average Shape</figcaption>
+                        <td align="right">
+                        <img src="img/face2da.jpg" width="300px" />
+                        <figcaption align="middle">Her Face With Average Shape</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/face1wa.jpg" width="300px" />
+                        <figcaption align="middle">My Face Warped Into Average Shape</figcaption>
+                        <td align="right">
+                        <img src="img/face2wa.jpg" width="300px" />
+                        <figcaption align="middle">Her Face Warped Into Average Shape</figcaption>
+                     </tr>
+                </table>
+            </div>
+
+            <p>After both faces have been warped into the average shape we can compute a 50% cross-dissolve of the resulting images to get the "Mid-way Face". The main strange areas in the image are where my hair differs from hers since it appears as 50% transparent hair which doesn't happen in real life.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/midwayface.jpg" width="300px" />
+                        <figcaption align="middle">"Mid-way Face"</figcaption>
+                     </tr>
+                </table>
+            </div>
+
+            <p>During the inverse warping stage the points calculated by applying the transformation matrix aren't integers, and if you choose the pixel value at the closest integer while along edges there can be artifacts. One way to avoid this is to perform bilinear interpolation over the 4 closest points to get a pixel value that is a combination of those closest pixels.</p>
+            <p>Here are examples of this occurring.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/p1.jpg" width="50px" />
+                        <figcaption align="middle"></figcaption>
+                        <td align="right">
+                        <img src="img/p2.jpg" width="50px" />
+                        <figcaption align="middle"></figcaption>
+                     </tr>
+                </table>
+            </div>
+            <p>Here are examples with bilinear interpolation.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/p1bi.jpg" width="50px" />
+                        <figcaption align="middle"></figcaption>
+                        <td align="right">
+                        <img src="img/p2bi.jpg" width="50px" />
+                        <figcaption align="middle"></figcaption>
+                     </tr>
+                </table>
+            </div>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/midwayface2.jpg" width="300px" />
+                        <figcaption align="middle">"Mid-way Face" With Bilinear Interpolation</figcaption>
+                     </tr>
+                </table>
+            </div>
+
+            <div class="space"></div>
+
+        <h2 align="left">The Morph Sequence</h2>
+            <div class="break"></div>
+            <p>In order to produce a morph sequence many different stages of the morph must be computed. To do this each shape and cross-dissolve are calculated with the following equation.</p>
+            <p>new_pts = pts1+p*(pts2-pts1)</p>
+            <p>where p is a fraction from [0,1] where p=0 is fully pts1 and p=1 is fully pts2.</p>
+            <p>In the case of cross-dissolve pts1 and pts2 are the full images.</p>
+            <p>This morph sequence was produced by iterating through t=0 to t=45 where p = (1/45)*t, and computing the resulting warped and blended images using those percentages.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/morph.gif" width="300px" />
+                        <figcaption align="middle">Morph Sequence</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <p>Note: It might take a little bit of time to fully load.</p>
+        
+            <div class="space"></div>
+                
+        <h2 align="left">The "Mean Face" of a Population</h2>
+            <div class="break"></div>
+            <p>To compute the "Mean Face" of the <a href="http://www2.imm.dtu.dk/~aam/datasets/datasets.html">Danes</a> population set, the average shape had to be computed and each face in the set had to be warped into that shape.</p>
+            <p>Here are two examples of faces from the data set warped into the average shape.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/fwarpa.jpg" width="300px" />
+                        <figcaption align="middle"></figcaption>
+                        <td align="right">
+                        <img src="img/mwarpa.jpg" width="300px" />
+                        <figcaption align="middle"></figcaption>
+                     </tr>
+                </table>
+            </div>
+            <p>After all the faces are warped into the average shape, the average of the resulting images is the average face.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/avg.jpg" width="300px" />
+                        <figcaption align="middle">Average Face</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <p>I then used the new average geometry and resulting image to warp between my face and the average face shape and vic versa.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/mwarp.jpg" width="300px" />
+                        <figcaption align="middle">My Face Warped to Average Geometry</figcaption>
+                        <td align="right">
+                        <img src="img/awarp.jpg" width="300px" />
+                        <figcaption align="middle">Average Face Warped to My Geometry</figcaption>
+                     </tr>
+                </table>
+            </div>
+
+            <div class="space"></div>   
+
+
+        <h2 align="left">Caricatures</h2>
+            <div class="break"></div>
+            <p>Caricatures are images where striking or unique features are exaggerated. To create a caricature of myself I had to compute my striking/unique features, add a percentage of those feature shapes to my original face shape and then warp my face into the resulting form. To compute unique features of my face I subtracted the Danes average face shape from mine.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/menew.jpg" width="300px" />
+                        <figcaption align="middle">My Face</figcaption>
+                        <td align="right">
+                        <img src="img/caricature1.jpg" width="300px" />
+                        <figcaption align="middle">My Caricature</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <p>I performed the same procedure for two other faces in the Danes dataset.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/f.jpg" width="300px" />
+                        <figcaption align="middle">Female Dane</figcaption>
+                        <td align="left">
+                        <img src="img/carf.jpg" width="300px" />
+                        <figcaption align="middle">Female Dane Caricature</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/m.jpg" width="300px" />
+                        <figcaption align="middle">Male Dane</figcaption>
+                        <td align="right">
+                        <img src="img/carm.jpg" width="300px" />
+                        <figcaption align="middle">Male Dane Caricatue</figcaption>
+                     </tr>
+                </table>
+            </div>
+            
+            <div class="space"></div>
+
+        <h2 align="left">Changing Gender</h2>
+            <div class="break"></div>
+            <p>Another use of extrapolated features is to change the appearance of gender, age, ethnicity ect. In this project I used extrapolated gender features to change my face's apparent gender. To do this I calculated the average male and female face shapes.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/fs.jpg" width="300px" />
+                        <figcaption align="middle">Female Avg Shape</figcaption>
+                        <td align="right">
+                        <img src="img/ms.jpg" width="300px" />
+                        <figcaption align="middle">Male Avg Shape</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <p>I then warped all of the female images into the female shape and all of the male images into the male shape, and took their averages to form the average male and female faces.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/fa.jpg" width="300px" />
+                        <figcaption align="middle">Female Avg</figcaption>
+                        <td align="right">
+                        <img src="img/ma.jpg" width="300px" />
+                        <figcaption align="middle">Male Avg</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <p>From the average male and female faces I warped them into the average face shape to align them. Then I calculated the difference in their colors by subtracting the female image from the male image for the male color and vis versa.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/fc.jpg" width="300px" />
+                        <figcaption align="middle">Female Avg Color</figcaption>
+                        <td align="right">
+                        <img src="img/mc.jpg" width="300px" />
+                        <figcaption align="middle">Male Avg Color</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <p>Since no females in the data set had mustaches and beards while many in the male data set did the difference left very light patches in the female colors where facial hair would be.</p>
+            <p>After computing these different pieces I then morphed my face into the shape of (my_shape + 1.0*(male_shape-female_shape) to add the male differences in shape to my face. Separately I morphed the male color image into my face shape and added it to my face. Finally I produced an image changing both my face shape and my face color.</p>
+
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/menew.jpg" width="300px" />
+                        <figcaption align="middle">My Face</figcaption>
+                        <td align="right">
+                        <img src="img/s1.jpg" width="300px" />
+                        <figcaption align="middle">Just Shape</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/c1.jpg" width="300px" />
+                        <figcaption align="middle">Just Color</figcaption>
+                        <td align="right">
+                        <img src="img/b1.jpg" width="300px" />
+                        <figcaption align="middle">Both</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <p>For fun I repeated this process and added the female differences in shape and color to my face. Since I started out without facial hair to be lightened, adding the female color differences causes there to be a light area above my lips.</p>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/menew.jpg" width="300px" />
+                        <figcaption align="middle">My Face</figcaption>
+                        <td align="right">
+                        <img src="img/s2.jpg" width="300px" />
+                        <figcaption align="middle">Just Shape</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <div align="left">
+                <table style="width=100%">
+                    <tr>
+                        <td align="left">
+                        <img src="img/c2.jpg" width="300px" />
+                        <figcaption align="middle">Just Color</figcaption>
+                        <td align="right">
+                        <img src="img/b2.jpg" width="300px" />
+                        <figcaption align="middle">Both</figcaption>
+                     </tr>
+                </table>
+            </div>
+            <div class="space"></div>
+    </div>
+
+</div>
+</body>
+</html>
+
+
+
+
